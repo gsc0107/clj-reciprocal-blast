@@ -34,10 +34,10 @@ user> (with-open [r (io/reader "/path/to/fasta-seqs.fasta")]
 user>
 ```
 
-Results is a jdbc database spec refering to a sqlite file produced at
-the end of the analysis with blast results for each original sequence
-that produced a reciprocal hit. Results can be accessed using `biodb`
-and `clj-blast`:
+The value of :results in the returned hashmap is a jdbc database spec
+refering to a sqlite file produced at the end of the analysis that
+contains blast results for each original sequence that produced a
+reciprocal hit. Results can be accessed using `biodb` and `clj-blast`:
 
 ```clojure
 user> (bdb/query-sequences (:results rblast-res) ["select * from sequences"] :blast
