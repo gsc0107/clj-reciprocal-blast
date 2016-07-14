@@ -56,11 +56,13 @@
     "tblastn" "blastx"))
 
 (defn- significant?
-  [i evalue query-coverage]
+  [i {:keys [evalue query-coverage program]}]
   (if-let [h (-> (bl/hit-seq i :evalue evalue) first)]
-    (if (>= (/ (bl/query-length i) (-> (:hsps h) first :Hsp_align-len))
-            query-coverage)
-      (:Hit_id h))))
+    (let [qc (if (= program "blastx")
+               (/ (-> (:hsps h) first :Hsp_align-len) (/ (bl/query-length i) 3))
+               (/ (-> (:hsps h) first :Hsp_align-len) (bl/query-length i)))]
+          (if (>= qc query-coverage)
+            (:Hit_id h)))))
 
 (defn- sign-hits->file
   [{:keys [blast1 wdir evalue database program query-coverage] :as m}]
@@ -69,7 +71,7 @@
          #(with-open [r (io/reader %)]
             (doall
              (->> (bl/iteration-seq r)
-                  (map (fn [x] (significant? x evalue query-coverage)))
+                  (map (fn [x] (significant? x m)))
                   (remove nil?))))
          blast1)
         set
