@@ -1,4 +1,4 @@
-(defproject clj-reciprocal-blast "0.1.0"
+(defproject clj-reciprocal-blast "0.1.1"
   :description "Clojure library for running reciprocal blast"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"

@@ -55,14 +55,21 @@
     "blastn" "blastn"
     "tblastn" "blastx"))
 
+(defn- significant?
+  [i evalue query-length]
+  (if-let [h (seq (-> (bl/hit-seq i :evalue evalue)))]
+    (if (>= (/ (bl/query-length i) (-> (:hsps h) :Hsp_align-len))
+            query-length)
+      (:Hit_id h))))
+
 (defn- sign-hits->file
-  [{:keys [blast1 wdir evalue database program] :as m}]
+  [{:keys [blast1 wdir evalue database program query-coverage] :as m}]
   (let [of (str (fs/file wdir "bl1-significant-hits.fasta"))]
     (-> (mapcat
          #(with-open [r (io/reader %)]
             (doall
              (->> (bl/iteration-seq r)
-                  (map (fn [x] (-> (bl/hit-seq x :evalue evalue) first :Hit_id)))
+                  (map (fn [x] (significant? x evalue query-coverage)))
                   (remove nil?))))
          blast1)
         set
@@ -123,8 +130,8 @@
 (defn reciprocal-blast
   "Runs reciprocal blast on a collection of fasta sequences."
   ([coll database program] (reciprocal-blast coll database program {}))
-  ([coll database program {:keys [wd evalue bparams relax]
-                           :or {wd nil evalue 10e-5 bparams {} relax 1}}]
+  ([coll database program {:keys [wd evalue bparams relax query-coverage]
+                           :or {wd nil evalue 10e-5 bparams {} relax 1 query-coverage 0.70}}]
    (let [wdir (make-wd wd)
          m {:wdir wdir
             :sfile (fa/fasta->file coll (fs/file wdir "sequences1.txt"))
@@ -142,8 +149,8 @@
 (defn reciprocal-blast-file
   "Runs reciprocal blast on a file of fasta formatted sequences."
   ([file database program] (reciprocal-blast-file file database program {}))
-  ([file database program {:keys [wd evalue bparams relax]
-                           :or {wd nil evalue 10e-5 bparams {} relax 1}}]
+  ([file database program {:keys [wd evalue bparams relax query-coverage]
+                           :or {wd nil evalue 10e-5 bparams {} relax 1 query-coverage 0.70}}]
    (let [wdir (make-wd wd)
          m {:wdir wdir
             :sfile file
