@@ -4,7 +4,7 @@ Clojure library for running reciprocal blast.
 
 ## Installation
 
-To include in project: [clj-reciprocal-blast "0.1.2"]
+To include in project: [clj-reciprocal-blast "0.1.3"]
 
 To include namespace: (:require [clj-reciprocal-blast.core :as rb])
 

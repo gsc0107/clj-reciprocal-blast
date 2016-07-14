@@ -56,10 +56,10 @@
     "tblastn" "blastx"))
 
 (defn- significant?
-  [i evalue query-length]
-  (if-let [h (seq (-> (bl/hit-seq i :evalue evalue)))]
-    (if (>= (/ (bl/query-length i) (-> (:hsps h) :Hsp_align-len))
-            query-length)
+  [i evalue query-coverage]
+  (if-let [h (-> (bl/hit-seq i :evalue evalue) first)]
+    (if (>= (/ (bl/query-length i) (-> (:hsps h) first :Hsp_align-len))
+            query-coverage)
       (:Hit_id h))))
 
 (defn- sign-hits->file
@@ -138,6 +138,7 @@
             :database database
             :relax relax
             :program program
+            :query-coverage query-coverage
             :evalue evalue
             :bparams (merge bparams {"-max_target_seqs" (str relax)})}]
      (->> (first-blasts m)
@@ -157,6 +158,7 @@
             :relax relax
             :database database
             :program program
+            :query-coverage query-coverage
             :evalue evalue
             :bparams (merge bparams {"-max_target_seqs" (str relax)})}]
      (->> (first-blasts m)
